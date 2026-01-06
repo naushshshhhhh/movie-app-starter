@@ -1,17 +1,57 @@
-import { useEffect, useState } from "react";
-const KEY = "";
+import { useEffect, useState} from "react";
+const KEY = "7fcb4c8f";
 
 function App() {
   const [movies, setMovies] = useState([]);
+  const [query, setQuery] = useState("batman");
 
-  fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=batman`)
-    .then((res) => res.json())
-    .then((data) => setMovies(data.Search));
+  // // .then() and .catch()
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //     fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=${query}`, {
+  //       singal: controller.signal,
+  //     })
+  //       .then((res) => res.json())
+  //       .then((data) => data.Response === "True" && setMovies(data.Search))
+  //       .catch((err) => console.log(err));
+  //     return () => controller.abort(); // Clean up data fetching
+  // }, [query]);
+
+  //async and await
+  useEffect(() => {
+  const controller = new AbortController();
+
+  const fetchMovies = async () => {
+    try {
+      const response = await fetch(
+        `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+        {
+          singal: controller.signal,
+        }
+      );
+      const data = await response.json();
+      if (data.Response === "True") {
+        setMovies(data.Search);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error.message);
+    }
+  };
+  fetchMovies();
+  return () => {
+    controller.abort();
+  };
+}, [query]);
 
   return (
     <div>
       <h1>Movies</h1>
-      <input type="text" placeholder="Search movies..." />
+      <input 
+        type="text" 
+        placeholder="Search movies..." 
+        value={query} 
+        onChange = {(e) => setQuery(e.target.value)}
+      />
       <table>
         <thead>
           <tr>
